@@ -1,24 +1,52 @@
 import * as vscode from 'vscode';
-import { exec } from 'child_process';
-import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
+import * as fs from 'fs';
+import { exec } from 'child_process';
+import { Context, Log } from './utils';
 
-export function activate(context: vscode.ExtensionContext) {
-    const homeDir = process.env.HOME || process.env.USERPROFILE || '';;
-    const dotfilesDir = path.join(homeDir, '.dotfiles');
-
-    if (!fs.existsSync(dotfilesDir)) {
-        vscode.window.showInformationMessage('Installing dotfiles...');
-        exec('curl -fsSL https://dotfiles.gbraad.nl/install.sh | bash', (error, stdout, stderr) => {
-            if (error) {
-                vscode.window.showErrorMessage(`Error installing dotfiles: ${stderr}`);
-                return;
-            }
-            vscode.window.showInformationMessage('Dotfiles installed successfully!');
-        });
-    } else {
-        vscode.window.showInformationMessage('Dotfiles already installed.');
+export async function activate(context: vscode.ExtensionContext) {
+    Log.info('Platform check starting');
+    
+    await Context.set(false);
+    
+    if (os.platform() !== 'linux') {
+        Log.info(`Platform ${os.platform()} not supported, Linux required`);
+        return;
     }
+
+    const checkIfInstalled = async () => {
+        try {
+            const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+            const dotfilesDir = path.join(homeDir, '.dotfiles');
+            
+            if (!fs.existsSync(dotfilesDir)) {
+                Log.info('Dotfiles not found, starting installation...');
+                
+                exec('curl -fsSL https://dotfiles.gbraad.nl/install.sh | bash', (error, stdout, stderr) => {
+                    if (error) {
+                        Log.info(`Installation failed with error: ${stderr}`);
+                        Context.set(false);
+                        return;
+                    }
+                    Log.info('Installation completed successfully');
+                    Context.set(true);
+                });
+            } else {
+                Log.info('Dotfiles already installed');
+                await Context.set(true);
+            }
+        } catch (error) {
+            Log.info(`Error checking installation status: ${error}`);
+            await Context.set(false);
+        }
+    };
+
+    await checkIfInstalled();
 }
 
-export function deactivate() {}
+export function deactivate() {
+    Log.info('Deactivating');
+    Context.set(false);
+    Log.dispose();
+}
