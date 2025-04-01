@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { exec } from 'child_process';
 import { Context, Log } from './utils';
+import { runDotfilesUpdate, runDotfilesSwitch } from './commands';
 
 export async function activate(context: vscode.ExtensionContext) {
     Log.info('Platform check starting');
@@ -19,8 +20,15 @@ export async function activate(context: vscode.ExtensionContext) {
         try {
             const homeDir = process.env.HOME || process.env.USERPROFILE || '';
             const dotfilesDir = path.join(homeDir, '.dotfiles');
+            const dotfilesConfigDir = path.join(homeDir, '.config', 'dotfiles');
             
-            if (!fs.existsSync(dotfilesDir)) {
+            // The dotfiles configuration folder should always exist
+            if (fs.existsSync(dotfilesConfigDir) && fs.existsSync(dotfilesDir)) {
+                Log.info('Dotfiles already installed');
+                await Context.set(true);
+                return;
+            } else
+            {
                 Log.info('Dotfiles not found, starting installation...');
                 
                 exec('curl -fsSL https://dotfiles.gbraad.nl/install.sh | bash', (error, stdout, stderr) => {
@@ -32,9 +40,6 @@ export async function activate(context: vscode.ExtensionContext) {
                     Log.info('Installation completed successfully');
                     Context.set(true);
                 });
-            } else {
-                Log.info('Dotfiles already installed');
-                await Context.set(true);
             }
         } catch (error) {
             Log.info(`Error checking installation status: ${error}`);
@@ -43,6 +48,9 @@ export async function activate(context: vscode.ExtensionContext) {
     };
 
     await checkIfInstalled();
+
+    context.subscriptions.push(vscode.commands.registerCommand('dotfiles-helper.runDotfilesUpdate', runDotfilesUpdate));
+    context.subscriptions.push(vscode.commands.registerCommand('dotfiles-helper.runDotfilesSwitch', runDotfilesSwitch));
 }
 
 export function deactivate() {

@@ -12,7 +12,7 @@
     "url": "https://github.com/gbraad-vscode/dotfiles-checker"
   },
   "license": "MIT",
-  "version": "0.5.0",
+  "version": "0.5.6",
   "engines": {
     "vscode": "^1.98.0"
   },
@@ -36,6 +36,18 @@
       }
     },
     "commands": [
+      {
+        "command": "dotfiles-helper.runDotfilesUpdate",
+        "title": "Run `dotfiles update`",
+        "enablement": "dotfiles-checker:isAvailable",
+        "category": "Dotfiles"
+      },
+      {
+        "command": "dotfiles-helper.runDotfilesSwitch",
+        "title": "Run `dotfiles switch`",
+        "enablement": "dotfiles-checker:isAvailable",
+        "category": "Dotfiles"
+      }
     ]
   },
   "scripts": {
