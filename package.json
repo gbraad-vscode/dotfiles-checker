@@ -12,9 +12,9 @@
     "url": "https://github.com/gbraad-vscode/dotfiles-checker"
   },
   "license": "MIT",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "engines": {
-    "vscode": "^1.96.0"
+    "vscode": "^1.94.0"
   },
   "icon": "img/icon.png",
   "categories": [
@@ -58,7 +58,7 @@
     "lint": "eslint src --ext ts"
   },
   "devDependencies": {
-    "@types/vscode": "^1.96.0",
+    "@types/vscode": "^1.94.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
